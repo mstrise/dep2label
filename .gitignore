@@ -1,0 +1,10 @@
+*.py[cod]
+__pycache__
+.idea/
+final.conllu
+raw.out
+score.txt
+*.txt
+*.log
+*.dset
+*.model
