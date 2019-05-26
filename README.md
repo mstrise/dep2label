@@ -29,7 +29,7 @@ words with a given PoS tag
 (- sign when the head is on the left side of the word and + sign otherwise).
 A label ```V_+1_nsubj``` for the token _Alice_
 means "the head of the word _Alice_ is the first word to the right with a PoS tag V, and their relation is nsubj"
-4. __Bracketing-based encoding__: represents dependency trees using a regular expresion that encodes dependency arcs
+4. __Bracketing-based encoding__: represents dependency trees using a regular expression that encodes dependency arcs
 as brackets. 
 A label ```<\>_dobj``` for the token _apple_
 means "the word _apple_ is the head of the preceding word indicated by```<\ ``` and has an incoming arc from a word
