@@ -106,7 +106,7 @@ languages we used [pretrained word embeddings](https://lindat.mff.cuni.cz/reposi
 #### Parse with a pre-trained model
 
 ```bash
-python main.py  --decode-config $PATH_TO_CONFIG_FILE_FOR_DECODING --input $PATH_TO_THE_INPUT_FILE --test-gold $PATH_TO_THE_GOLD_FILE --output $PATH_TO_THE_OUTPUT_FILE --encoding-type $TYPE_OF_ENCODING --eval-type $EVAL $FORMAT_OF_THE FILES --postag-type $TYPE_OF_POSTAGS
+python main.py  --decode-config $PATH_TO_CONFIG_FILE_FOR_DECODING --input $PATH_TO_THE_INPUT_FILE --test-gold $PATH_TO_THE_GOLD_FILE --output $PATH_TO_THE_OUTPUT_FILE --encoding-type $TYPE_OF_ENCODING --eval-type $FORMAT_OF_THE FILES --postag-type $TYPE_OF_POSTAGS
 ```
 * ```--decode-config``` an example of a [config file for decoding of the best model](https://github.com/mstrise/seq2label/blob/master/config/decode_best_model.config)
 * ```--input``` a file in the [CONLL format](https://universaldependencies.org/format.html) with either gold or predicted 
