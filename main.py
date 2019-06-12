@@ -40,9 +40,9 @@ acc_speed = 0.0
 
 def data_initialization(data):
     data.initial_feature_alphabets()
-    data.build_alphabet(data.train_dir)
-    data.build_alphabet(data.dev_dir)
-    data.build_alphabet(data.test_dir)
+    data.build_alphabet(data.train_enc_dep2label)
+    data.build_alphabet(data.dev_enc_dep2label)
+   # data.build_alphabet(data.test_dir)
     data.fix_alphabet()
 
 
@@ -261,7 +261,7 @@ def batchify_with_label(input_batch_list, gpu, volatile_flag=False):
     return word_seq_tensor, feature_seq_tensors, word_seq_lengths, word_seq_recover, char_seq_tensor, char_seq_lengths, char_seq_recover, label_seq_tensor, mask
 
 
-def train(data, decode_data, args):
+def train(data,decode_data,args):
     print("Training model...")
     data.show_data_summary()
     save_data_name = data.model_dir + ".dset"
@@ -349,9 +349,8 @@ def train(data, decode_data, args):
             exit(1)
 
         dev_finish = time.time()
-        if args.eval_type=="CONLLU":
-            print("lookup")
-            lookup = processing.dump_into_lookup(args.dev_gold)
+        if data.eval_type=="CONLLU":
+            lookup = processing.dump_into_lookup(data.dev_gold)
         # save the model
         model_name = data.model_dir + ".model"
         torch.save(model.state_dict(), model_name)
@@ -364,25 +363,26 @@ def train(data, decode_data, args):
         decode_data.write_decoded_results2(decode_results, probs, 'raw')
         test_finish = time.time()
         gc.collect()
-        dev_enc = l.Encoding(args.encoding, args.pos_type)
-        dict_encoded, all_sent, text = dev_enc.encode(args.dev_gold)
-        processing.write_to_conllu(dict_encoded, args.dev_converted, 0)
-        diction, words = dev_enc.decode(decode_data.decode_dir, args.encoding, all_sent)
+        dev_enc = l.Encoding(data.encoding, data.postag_type)
+        dict_encoded, all_sent, text = dev_enc.encode(data.dev_gold)
+        processing.write_to_conllu(dict_encoded, data.dev_enc_dep2label, 0)
+        diction, words = dev_enc.decode(decode_data.output_nn, data.encoding, all_sent)
         processing.write_to_conllu(diction, "final.conllu", text)
-        if args.eval_type == "CONLLU":
-           
+
+        #EVALUATE AND SAVE THE MODEL WITH THE HIGHEST UAS SCORE ON THE DEV SET
+        if data.eval_type == "CONLLU":
             processing.merge_lookup("final.conllu", lookup)
 
         score = -10.0
 
-        if args.eval_type == 'CONLL':
+        if data.eval_type == 'CONLL':
             call(
-                "perl eval07.pl -p -q -g " + args.dev_gold + " -s final.conllu | grep Unlabeled | cut -d ' ' -f 12 > score.txt",
+                "perl eval07.pl -p -q -g " + data.dev_gold + " -s final.conllu | grep Unlabeled | cut -d ' ' -f 12 > score.txt",
                 shell=True)
             with open('score.txt') as f:
                 score = float(f.read())
 
-        elif args.eval_type == 'CONLLU':
+        elif data.eval_type == 'CONLLU':
             subparser = argparse.ArgumentParser()
             subparser.add_argument("gold_file", type=str,
                                    help="Name of the CoNLL-U file with the gold data.")
@@ -392,17 +392,15 @@ def train(data, decode_data, args):
                                    help="Print all metrics.")
             subparser.add_argument("--counts", "-c", default=False, action="store_true",
                                    help="Print raw counts of correct/gold/system/aligned words instead of prec/rec/F1 for all metrics.")
-            subargs = subparser.parse_args([args.dev_gold, "final.conllu"])
+            subargs = subparser.parse_args([data.dev_gold, "final.conllu"])
 
             # Evaluate
             evaluation = conll18.evaluate_wrapper(subargs)
-
             score = 100 * evaluation["UAS"].f1
         else:
             print('Invalid option for --eval-type')
             exit()
 
-        
         if score > best_score:
             best_score = score
             print("Exceeds. New best score: " + repr(score))
@@ -410,8 +408,8 @@ def train(data, decode_data, args):
             best_model_name = data.model_dir + "_best.model"
             torch.save(model.state_dict(), best_model_name)
         print("Best score sofar " + repr(best_score))
-        print("Best epoch "+repr(best_epoch))
-        
+        print("Best epoch " + repr(best_epoch))
+
 
         """
         best_epoch = idx
@@ -420,7 +418,7 @@ def train(data, decode_data, args):
         print("Best score sofar " + repr(score))
         print("Best epoch "+repr(best_epoch))
 """
-        
+
 
 
 def load_model_decode(data, name):
@@ -434,111 +432,85 @@ def load_model_decode(data, name):
     # else:
     #     model.load_state_dict(torch.load(model_dir))
     #     # model = torch.load(model_dir)
-    if decode_data.HP_gpu:
+    if data.HP_gpu:
         model.load_state_dict(torch.load(data.load_model_dir))
     else:
         model.load_state_dict(torch.load(data.load_model_dir, map_location=lambda storage, loc: storage.cpu()))
 
-    #print("Decode %s data, nbest: %s ..." % (name, data.nbest))
-    start_time = time.time()
+    #start_time = time.time()
     speed, acc, p, r, f, pred_results, pred_scores, probs, acc_instances, acc_speed = evaluate(data, model, name, data.nbest)
-    end_time = time.time()
-    time_cost = end_time - start_time
-    #if data.seg:
-     #   print("%s: time:%.2fs, speed:%.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f" % (
-      #  name, time_cost, speed, acc, p, r, f))
-    #else:
-     #   print("%s: time:%.2fs, speed:%.2fst/s; acc: %.4f" % (name, time_cost, speed, acc))
+    #end_time = time.time()
+    #time_cost = end_time - start_time
+
     return pred_results, pred_scores, probs, acc_instances, acc_speed
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Tuning with NCRF++')
+    parser = argparse.ArgumentParser(description='Sequence NCRF++')
     parser.add_argument('--train-config', help='Train configuration File', dest="train")
     parser.add_argument('--decode-config', help='Decode configuration File', required=True, dest="decode")
-    parser.add_argument('--train-gold', help='Training gold file', dest='train_gold')
-    parser.add_argument('--dev-gold', help='Training gold file', dest='dev_gold')
-    parser.add_argument('--test-gold', help='Test gold file', dest='test_gold')
-    parser.add_argument('--encoded-input-training', help='Training file with encodings', dest='train_converted')
-    parser.add_argument('--encoded-input-dev', help='Test file with encodings', dest='dev_converted')
-    parser.add_argument('--input', help='Input file to be predicted', dest='input')
-    parser.add_argument('--output', help='Output file after decoding', dest='output')
-    parser.add_argument('--eval-type', help='Evaluation type', dest='eval_type', default="CONLL",
-                        choices=["CONLL", "CONLLU"])
-    parser.add_argument('--encoding-type', help='Encoding type', dest='encoding', default=3, type=int, choices=[1,2,3,4])
-    parser.add_argument('--postag-type', help='PoS type', dest='pos_type', default="UPOS",
-                        choices=["UPOS", "XPOS"])
-    
 
     args = parser.parse_args()
-    encoding_index = args.encoding
-    decode_data = Data()
-    decode_data.HP_gpu = torch.cuda.is_available()
-    decode_data.read_config(args.decode)
-    dev_enc = l.Encoding(args.encoding, args.pos_type)
 
+    decode = Data()
+    decode.read_config(args.decode)
 
-    if args.train is not None and args.train_gold is not None and args.train_converted is not None:
-        dict_encoded, all_sent, _ = dev_enc.encode(args.dev_gold)
-        processing.write_to_conllu(dict_encoded, args.dev_converted, 0)
+    if args.train is not None:
+        #TRAIN
         train_data = Data()
-        train_data.HP_gpu = torch.cuda.is_available()
+        encoding_index = train_data.encoding
         train_data.read_config(args.train)
-
-        # status = data.status.lower()
+        train_enc = l.Encoding(train_data.encoding, train_data.postag_type)
+        dict_encoded, all_sent, _ = train_enc.encode(train_data.dev_gold)
+        processing.write_to_conllu(dict_encoded, train_data.dev_enc_dep2label, 0)
+        train_data.HP_gpu = torch.cuda.is_available()
         print("Seed num:", seed_num)
-
-        # if status == 'train':
-        print("MODEL: train")
-        train_enc = l.Encoding(args.encoding, args.pos_type)
-        dict_encoded, all_sent, _ = train_enc.encode(args.train_gold)
-        processing.write_to_conllu(dict_encoded, args.train_converted, 0)
+        train_enc = l.Encoding(train_data.encoding, train_data.postag_type)
+        dict_encoded, all_sent, _ = train_enc.encode(train_data.train_gold)
+        processing.write_to_conllu(dict_encoded, train_data.train_enc_dep2label, 0)
         data_initialization(train_data)
         train_data.generate_instance('train')
         train_data.generate_instance('dev')
-        train_data.generate_instance('test')
+        #train_data.generate_instance('test')
         train_data.build_pretrain_emb()
-        train(train_data, decode_data, args)
+        train(train_data,decode,args)
 
     else:
-        if args.eval_type=="CONLLU":
-            lookup = processing.dump_into_lookup(args.input)
-        decode_data.load(decode_data.dset_dir)
-        decode_data.read_config(args.decode)
-        decode_data.show_data_summary()
-        dev_enc = l.Encoding(0, args.pos_type)
+        #DECODE
+        decode.HP_gpu = torch.cuda.is_available()
+        decode.load(decode.dset_dir)
+        #decode_data.show_data_summary()
+        decode.read_config(args.decode)
+        if decode.eval_type=="CONLLU":
+            lookup = processing.dump_into_lookup(decode.input)
+        dev_enc = l.Encoding(0, decode.postag_type)
         #pass NCRF a file with labels column as 0 for sanity check
-        dict_encoded, all_sent, all_text = dev_enc.encode(args.input)
-        processing.write_to_conllu(dict_encoded, decode_data.raw_dir, 0)
-        # decode the saved model
-        
-        decode_data.generate_instance('raw')
+        dict_encoded, all_sent, all_text = dev_enc.encode(decode.input)
+        processing.write_to_conllu(dict_encoded, decode.raw_dir, 0)
+        decode.generate_instance('raw')
 
-
-        # print("nbest: %s"%(decode_data.nbest))
-        decode_results, pred_scores, probs, acc_instances, acc_speed = load_model_decode(decode_data, 'raw')
+        decode_results, pred_scores, probs, acc_instances, acc_speed = load_model_decode(decode, 'raw')
         # if data.nbest:
         #    data.write_nbest_decoded_results(decode_results, pred_scores, 'raw')
         # else:
-        decode_data.write_decoded_results2(decode_results, probs, 'raw')
+        decode.write_decoded_results2(decode_results, probs, 'raw')
         start_time = time.time()
-        dict, nb_words = dev_enc.decode(decode_data.decode_dir, args.encoding, all_sent)
+        dict, nb_words = dev_enc.decode(decode.output_nn, decode.encoding, all_sent)
         decoding_time = time.time() - start_time
         total_time = acc_speed + decoding_time
         print("Raw parsing time: "+repr(total_time))
         print("Sent/sec: " + repr(acc_instances / total_time))
+        processing.write_to_conllu(dict, decode.parsedTree, all_text)
 
+        if decode.eval_type == "CONLLU":
+            processing.merge_lookup(decode.parsedTree, lookup)
 
-        processing.write_to_conllu(dict, args.output, all_text)
-        if args.eval_type == "CONLLU":
-            processing.merge_lookup(args.output, lookup)
-
-        if args.eval_type == 'CONLL':
+        if decode.eval_type == 'CONLL':
             call(
-                "perl eval07.pl -p -q -g " + args.test_gold + " -s "+args.output,
+                "perl eval07.pl -p -q -g " + decode.test_gold + " -s "+decode.parsedTree,
                 shell=True)
 
-        elif args.eval_type == 'CONLLU':
+        elif decode.eval_type == 'CONLLU':
             # Parse arguments
             subparser = argparse.ArgumentParser()
             subparser.add_argument("gold_file", type=str,
@@ -549,9 +521,8 @@ if __name__ == '__main__':
                                    help="Print all metrics.")
             subparser.add_argument("--counts", "-c", default=False, action="store_true",
                                    help="Print raw counts of correct/gold/system/aligned words instead of prec/rec/F1 for all metrics.")
-         
-            subargs = subparser.parse_args([args.test_gold, args.output])
-                
+
+            subargs = subparser.parse_args([decode.test_gold, decode.parsedTree])
 
             # Evaluate
             evaluation = conll18.evaluate_wrapper(subargs)

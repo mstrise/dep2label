@@ -33,20 +33,24 @@ class Data:
         self.feature_alphabets = []
         self.feature_num = len(self.feature_alphabets)
         self.feat_config = None
-
-
         self.label_alphabet = Alphabet('label',True)
         self.tagScheme = "NoSeg" ## BMES/BIO
-
         self.seg = True
 
         ### I/O
-        self.train_dir = None
-        self.dev_dir = None
-        self.test_dir = None
-        self.raw_dir = None
+        self.train_gold = None
+        self.dev_gold = None
+        self.test_gold = None
+        self.train_enc_dep2label = None
+        self.dev_enc_dep2label = None
+        self.encoding = None
+        self.eval_type = None
+        self.postag_type = None
 
-        self.decode_dir = None
+        self.input=None
+        self.parsedTree=None
+        self.raw_dir = None
+        self.output_nn = None
         self.dset_dir = None ## data vocabulary related file
         self.model_dir = None ## model save  file
         self.load_model_dir = None ## model load file
@@ -124,14 +128,11 @@ class Data:
         print("     Char embedding size: %s"%(self.char_emb_dim))
         print("     Norm   word     emb: %s"%(self.norm_word_emb))
         print("     Norm   char     emb: %s"%(self.norm_char_emb))
-        print("     Train  file directory: %s"%(self.train_dir))
-        print("     Dev    file directory: %s"%(self.dev_dir))
-        print("     Test   file directory: %s"%(self.test_dir))
         print("     Raw    file directory: %s"%(self.raw_dir))
         print("     Dset   file directory: %s"%(self.dset_dir))
         print("     Model  file directory: %s"%(self.model_dir))
         print("     Loadmodel   directory: %s"%(self.load_model_dir))
-        print("     Decode file directory: %s"%(self.decode_dir))
+        print("     Decode file directory: %s"%(self.output_nn))
         print("     Train instance number: %s"%(len(self.train_texts)))
         print("     Dev   instance number: %s"%(len(self.dev_texts)))
         print("     Test  instance number: %s"%(len(self.test_texts)))
@@ -176,7 +177,7 @@ class Data:
 
 
     def initial_feature_alphabets(self):
-        items = open(self.train_dir,'r').readline().strip('\n').split("\t")
+        items = open(self.train_enc_dep2label, 'r').readline().strip('\n').split("\t")
         total_column = len(items)
         if total_column > 2:
             for idx in range(1, total_column-1):
@@ -260,19 +261,20 @@ class Data:
     def generate_instance(self, name):
         self.fix_alphabet()
         if name == "train":
-            self.train_texts, self.train_Ids = read_instance(self.train_dir, self.word_alphabet, self.char_alphabet, self.feature_alphabets, self.label_alphabet, self.number_normalized, self.MAX_SENTENCE_LENGTH)
+            self.train_texts, self.train_Ids = read_instance(self.train_enc_dep2label, self.word_alphabet, self.char_alphabet, self.feature_alphabets, self.label_alphabet, self.number_normalized, self.MAX_SENTENCE_LENGTH)
         elif name == "dev":
-            self.dev_texts, self.dev_Ids = read_instance(self.dev_dir, self.word_alphabet, self.char_alphabet, self.feature_alphabets, self.label_alphabet, self.number_normalized, self.MAX_SENTENCE_LENGTH)
-        elif name == "test":
-            self.test_texts, self.test_Ids = read_instance(self.test_dir, self.word_alphabet, self.char_alphabet, self.feature_alphabets, self.label_alphabet, self.number_normalized, self.MAX_SENTENCE_LENGTH)
+            self.dev_texts, self.dev_Ids = read_instance(self.dev_enc_dep2label, self.word_alphabet, self.char_alphabet, self.feature_alphabets, self.label_alphabet, self.number_normalized, self.MAX_SENTENCE_LENGTH)
+        #elif name == "test":
+        #    self.dev_texts, self.dev_Ids = read_instance(self.dev_enc_dep2label, self.word_alphabet, self.char_alphabet, self.feature_alphabets, self.label_alphabet, self.number_normalized, self.MAX_SENTENCE_LENGTH)
         elif name == "raw":
+            print(self.raw_dir)
             self.raw_texts, self.raw_Ids = read_instance(self.raw_dir, self.word_alphabet, self.char_alphabet, self.feature_alphabets, self.label_alphabet, self.number_normalized, self.MAX_SENTENCE_LENGTH)
         else:
             print("Error: you can only generate train/dev/test instance! Illegal input:%s"%(name))
 
 
     def write_decoded_results(self, predict_results, name):
-        fout = open(self.decode_dir,'w')
+        fout = open(self.output_nn,'w')
         sent_num = len(predict_results)
         content_list = []
         if name == 'raw':
@@ -293,10 +295,10 @@ class Data:
                 fout.write(content_list[idx][0][idy].encode('utf-8') + "\t" + predict_results[idx][idy] + '\n')
             fout.write('\n')
         fout.close()
-        print("Predict %s result has been written into file. %s"%(name, self.decode_dir))
+        print("Predict %s result has been written into file. %s"%(name, self.output_nn))
 
     def write_decoded_results2(self, predict_results, probs, name):
-        fout = open(self.decode_dir,'w')
+        fout = open(self.output_nn,'w')
         sent_num = len(predict_results[0])
         content_list = []
         if name == 'raw':
@@ -309,7 +311,7 @@ class Data:
             content_list = self.train_texts
         else:
             print("Error: illegal name during writing predict result, name should be within train/dev/test/raw !")
-            
+
         assert(sent_num == len(content_list))
         for idx in range(sent_num):
             sent_length = len(predict_results[0][idx])
@@ -323,7 +325,7 @@ class Data:
                 fout.write(base_string +"\t"+ content_string + '\n')
             fout.write('\n')
         fout.close()
-        print("Predict %s result has been written into file. %s"%(name, self.decode_dir))
+        print("Predict %s result has been written into file. %s"%(name, self.output_nn))
 
 
     def load(self,data_file):
@@ -342,7 +344,7 @@ class Data:
     def write_nbest_decoded_results(self, predict_results, pred_scores, name):
         ## predict_results : [whole_sent_num, nbest, each_sent_length]
         ## pred_scores: [whole_sent_num, nbest]
-        fout = open(self.decode_dir,'w')
+        fout = open(self.output_nn,'w')
         sent_num = len(predict_results)
         content_list = []
         if name == 'raw':
@@ -376,27 +378,50 @@ class Data:
                 fout.write(label_string)
             fout.write('\n')
         fout.close()
-        print("Predict %s %s-best result has been written into file. %s"%(name,nbest, self.decode_dir))
+        print("Predict %s %s-best result has been written into file. %s"%(name,nbest, self.output_nn))
 
 
     def read_config(self,config_file):
         config = config_file_to_dict(config_file)
         ## read data:
-        the_item = 'train_dir'
+        the_item = 'train_gold'
         if the_item in config:
-            self.train_dir = config[the_item]
-        the_item = 'dev_dir'
+            self.train_gold = config[the_item]
+        the_item = 'dev_gold'
         if the_item in config:
-            self.dev_dir = config[the_item]
-        the_item = 'test_dir'
+            self.dev_gold = config[the_item]
+        the_item = 'test_gold'
         if the_item in config:
-            self.test_dir = config[the_item]
+            self.test_gold = config[the_item]
+        the_item = 'train_enc_dep2label'
+        if the_item in config:
+            self.train_enc_dep2label = config[the_item]
+        the_item = 'dev_enc_dep2label'
+        if the_item in config:
+            self.dev_enc_dep2label = config[the_item]
+
+        the_item = 'input'
+        if the_item in config:
+            self.input = config[the_item]
+        the_item = 'parsedTree'
+        if the_item in config:
+            self.parsedTree = config[the_item]
+
+        the_item = 'encoding'
+        if the_item in config:
+            self.encoding = int(config[the_item])
+        the_item = 'eval_type'
+        if the_item in config:
+            self.eval_type = config[the_item]
+        the_item = 'postag_type'
+        if the_item in config:
+            self.postag_type = config[the_item]
         the_item = 'raw_dir'
         if the_item in config:
             self.raw_dir = config[the_item]
-        the_item = 'decode_dir'
+        the_item = 'output_nn'
         if the_item in config:
-            self.decode_dir = config[the_item]
+            self.output_nn = config[the_item]
         the_item = 'dset_dir'
         if the_item in config:
             self.dset_dir = config[the_item]
@@ -406,7 +431,6 @@ class Data:
         the_item = 'load_model_dir'
         if the_item in config:
             self.load_model_dir = config[the_item]
-
         the_item = 'word_emb_dir'
         if the_item in config:
             self.word_emb_dir = config[the_item]
@@ -463,11 +487,6 @@ class Data:
         the_item = 'feature'
         if the_item in config:
             self.feat_config = config[the_item] ## feat_config is a dict
-
-
-
-
-
 
         ## read training setting:
         the_item = 'optimizer'

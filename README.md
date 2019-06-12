@@ -24,22 +24,20 @@ means "the head of the word _Alice_ is at index 2 with the relation nsubj"
 and its dependent (- sign when the head is on the left side of the word and + sign otherwise).
 A label  ```+1_nsubj``` for the token _Alice_
 means "the head of the word _Alice_ is at index position +1 to the right from that word with the relation nsubj"
-3. __Relative PoS-based encoding__: encodes the distance of the head from its dependent in terms of number of
-words with a given PoS tag
+3. __Relative PoS-based encoding__: encodes the the distance of the head's PoS tag from its dependent 
 (- sign when the head is on the left side of the word and + sign otherwise).
 A label ```V_+1_nsubj``` for the token _Alice_
-means "the head of the word _Alice_ is the first word to the right with a PoS tag V, and their relation is nsubj"
-4. __Bracketing-based encoding__: represents dependency trees using a regular expression that encodes dependency arcs
-as brackets. 
+means "the head of the word _Alice_ is the first word to the right with a PoS tag V and with the relation nsubj"
+4. __Bracketing-based encoding__: represents words referring to the form of regular expressions. 
 A label ```<\>_dobj``` for the token _apple_
 means "the word _apple_ is the head of the preceding word indicated by```<\ ``` and has an incoming arc from a word
 somewhere to the left ```>``` with the relation dobj".
 
-More detailed explanation of the encodings can be found in the paper, referenced below.
+More detailed explanation of the encodings can be found in the paper.
 
 An example line from a file in the 
 [CONLL format](https://universaldependencies.org/format.html): ```1    Alice   _   NNP NNP _   2   nsubj   _   _       ```
-can be transformed with ```encoding 3``` into a new format (token + its label) that will be fed into [NCRF++](https://github.com/jiesutd/NCRFpp):```Alice    V_+1_nsubj    ```
+can be tansformed with ```encoding 3``` into a new format (token + its label) that will be fed into [NCRF++](https://github.com/jiesutd/NCRFpp):```Alice    V_+1_nsubj    ```
 
 
 ###### NCRF++
@@ -55,7 +53,8 @@ As the last step, the output of [NCRF++](https://github.com/jiesutd/NCRFpp) is d
 CONLL 
 format. Additionally, the output is postprocessed in order to assure that each sentence is well-formed (for instance 
 that the 
-system only outputs acyclic syntactic trees). A more detailed explanation can be found in the paper.
+system only outputs acyclic syntactic trees or if no root is predicted the system searches throught the 
+top 3 most probably labels for each token). A more detailed explanation can be found in the paper.
 
 
 ## Requirements
@@ -74,24 +73,39 @@ The program was tested on Ubuntu 16.04, Python 2.7.12, PyTorch 0.3.1.
 #### Train a model
 
 ```bash
-python main.py --train-config $PATH_TO_CONFIG_FILE_FOR_TRAINING --decode-config $PATH_TO_CONFIG_FILE_FOR_DECODING --train-gold $PATH_TO_GOLD_FILE_TRAIN_SET --dev-gold $PATH_TO_GOLD_FILE_DEV_SET --encoded-input-training $PATH_TO_FILE_WITH_ENCODING_OF_TRAIN_SET --encoded-input-dev $PATH_TO_FILE_WITH_ENCODING_OF_DEV_SET --encoding-type $TYPE_OF_ENCODING --eval-type $FORMAT_OF_THE_FILES --postag-type $TYPE_OF_POSTAGS
+python main.py --train-config $PATH_TO_CONFIG_FILE_FOR_TRAINING --decode-config $PATH_TO_CONFIG_FILE_FOR_DECODING 
 ```
-* ```--train-config``` an example of a [config file for training](https://github.com/mstrise/seq2label/blob/master/config/train.config)
-* ```--decode-config``` an example of a [config file for decoding](https://github.com/mstrise/seq2label/blob/master/config/decode.config)
-* ```--train-gold```  and ```--dev_gold``` have to be in [CONLL format](https://universaldependencies.org/format.html)
-* ```--encoded-input-training```  and ```--encoded-input-dev``` files to which the system writes tokens and 
-their encoded 
-labels that will be used as an input
- for NCRF++
-* ```--encoding-type``` a type of encoding that one wants to use: ```1```, ```2```, ```3``` or ```4```. Encoding ```3```
- is 
-set as default for best performance
-* ```--eval-type``` a format of the file that one wants to use: ```CONLL``` (for PTB) or ```CONLLU``` (for UD). 
-Different 
-scripts are used to evaluate them. The first one excludes the punctuation.
-* ```--postag-type``` a type of PoS tags that one wants to use as a self-defined feature: ```UPOS```: *Universal 
-part-of-speech tag* or 
-```XPOS```: *Language-specific part-of-speech tag* 
+* ```--train-config``` an example of a [config file for training](https://github.com/mstrise/seq2label/blob/master/config/train.config), where
+
+
+```Python
+### I/O ###
+train_gold=...  # gold file for training 
+dev_gold=...    # gold file for evaluation on the development set
+train_enc_dep2label=... # file to which the system will write the encoded dependency tree with its labels for training set
+dev_enc_dep2label=...   # file to which the system will write the encoded dependency tree with its labels for dev set
+model_dir=... # directory where model will be stored
+word_emb_dir=...    # extrernal word embeddings
+encoding=...    # type of encoding that one wants to use: 1,2,3 or 4. Encoding 3 is set as default for the best performance
+eval_type=...   # format of the file: CONLL (for PTB) or CONLLU (for UD). Different scripts are used to evaluate them. The first one excludes the punctuation. 
+postag_type=... # type of PoS tags that one wants to use as a self-defined feature: UPoS: Universal part-of-speech tag or XPOS: Language-specific part-of-speach tag  
+```
+
+* ```--decode-config``` an example of a [config file for decoding](https://github.com/mstrise/seq2label/blob/master/config/decode.config), where
+
+```Python
+### Decode ###
+test_gold=... # gold file for testing
+input=... # file in the CoNLL-U format with either gold or predicted segmentation and PoS tags
+raw_dir=... # file to which the system will write the encoded dependency tree with its labels for testing
+output_nn=... # output from NCRF++ in the form of: TOKEN---POS FEATS---TOP 3 MOST PROBABLE LABELS FOR A GIVEN TOKEN
+parsedTree=...  # final parsed file 
+dset_dir=... # directory for .dset file (should be the same as model_dir defined in train.config)
+load_model_dir=... # directory for .model file (should be the same as model_dir defind in train.config)  
+```
+
+
+
 
 In this work, the same [pretrained word embeddings](https://github.com/clab/lstm-parser/) for English and 
 Chinese were used as in the paper: 
@@ -106,13 +120,19 @@ languages we used [pretrained word embeddings](https://lindat.mff.cuni.cz/reposi
 #### Parse with a pre-trained model
 
 ```bash
-python main.py  --decode-config $PATH_TO_CONFIG_FILE_FOR_DECODING --input $PATH_TO_THE_INPUT_FILE --test-gold $PATH_TO_THE_GOLD_FILE --output $PATH_TO_THE_OUTPUT_FILE --encoding-type $TYPE_OF_ENCODING --eval-type $FORMAT_OF_THE FILES --postag-type $TYPE_OF_POSTAGS
+python main.py  --decode-config $PATH_TO_CONFIG_FILE_FOR_DECODING 
 ```
 * ```--decode-config``` an example of a [config file for decoding of the best model](https://github.com/mstrise/seq2label/blob/master/config/decode_best_model.config)
-* ```--input``` a file in the [CONLL format](https://universaldependencies.org/format.html) with either gold or predicted 
-segmentation 
-and PoS tags  
-* ```--test-gold``` a gold file for evaluation
+
+
+#### Script for tree encoding
+
+You can easily encode your trees into labels using the following script:
+
+```bash
+python encode_trees2labels.py --fileToEncode $PATH_TO_THE_CONLLU_FILE --output $PATH_TO_THE_OUTPUT_FILE --encoding 
+$TYPE_OF_ENCODING:1,2,3,4 --pos $UPOS/XPOS 
+```
 
 
 ## Reference

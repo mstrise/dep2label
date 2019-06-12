@@ -429,8 +429,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     data = Data()
     
-    data.train_dir = args.train 
-    data.dev_dir = args.dev 
+    data.train_enc_dep2label = args.train 
+    data.dev_enc_dep2label = args.dev 
     data.test_dir = args.test
     data.model_dir = args.savemodel
     data.dset_dir = args.savedset
