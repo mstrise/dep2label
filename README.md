@@ -4,8 +4,9 @@ We recast dependency parsing as a sequence labeling problem
 where each input word from a sentence is represented as a label 
 using one of four encodings. Our BILSTM-based models yield fast and accurate dependency 
 parsing without using any traditional parsing algorithms. The repository contains source 
-code for the paper "Viable Dependency Parsing as Sequence Labeling" that has been accepted
+code for the paper ["Viable Dependency Parsing as Sequence Labeling"](https://www.aclweb.org/anthology/N19-1077) that has been accepted
 by NAACL 2019. 
+
 
 #### How does Dependency Parsing as Sequence Labeling work in short?
 
