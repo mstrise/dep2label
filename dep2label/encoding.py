@@ -11,7 +11,6 @@ def encode_3(gold_sentence, task):
         label = str(
             bos + "{}" + bos + "{}" + bos)
     full_label = str(bos + "\t" + bos + "\t" + label)
-    #full_label=label
     words_with_labels.update({0: full_label})
 
     for index_of_word in gold_sentence:
@@ -42,8 +41,6 @@ def encode_3(gold_sentence, task):
                 full_label = str(
                     info_of_a_word[1] + "\t" + info_of_a_word[3] + "\t" + label)
 
-                #full_label = str(label)
-
                 words_with_labels.update({index_of_word: full_label})
 
             # head is on the left side from the word
@@ -68,7 +65,6 @@ def encode_3(gold_sentence, task):
                 full_label = str(
                     info_of_a_word[1] + "\t" + info_of_a_word[3] + "\t" + label)
 
-                #full_label = str(label)
                 words_with_labels.update({index_of_word: full_label})
 
     eos = "-EOS-"

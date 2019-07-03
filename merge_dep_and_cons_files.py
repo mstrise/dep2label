@@ -10,7 +10,7 @@ def merge_treebank(enc_cons, enc_dep, mergedFile):
                 con = line_con.strip("\n")
                 depen = line_dep.strip('\n').split("\t")
                 label_depend = depen[2]
-                #in case the POS differ in cons and depend file, take only the dependency label and merge it with the rest of constituency file
+                #in case the POS tags differ in cons and depend file, take only the dependency label and merge it with the rest of constituency file
                 merged_cons_dep = "{}".join((con, label_depend))
                 file_merged.write(merged_cons_dep)
                 file_merged.write("\n")

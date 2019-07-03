@@ -1,6 +1,6 @@
 #Update this path to your virtual environment
 HOME=/home/david.vilares/
-source $HOME/env/cons2labels/bin/activate
+source $HOME/env/cons2label/bin/activate
 
 HOME_NCRFpp=$HOME/Escritorio/CPH/NCRFpp_multitask1.5/
 TEST_NAME="test"

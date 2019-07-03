@@ -1,5 +1,5 @@
 #Update this path to your virtual environment
-source /env/cons2labels/bin/activate
+source /env/cons2label/bin/activate
 
 TEST_NAME="test"
 TEST_PATH=../CTB_pred_tags/$TEST_NAME"_ch.trees"

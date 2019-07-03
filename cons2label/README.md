@@ -4,7 +4,7 @@ This repository contains the source code from the paper "Constituent Parsing as 
 
 ## Prerrequisites
 
-We **assume** and also **highly recommend** that you first **create a virtualenv** (e.g. `virtualenv $HOME/env/cons2labels`), so the requeriments for `cons2labels` do not interfere with other versions of packages that you might need for a different software.
+We **assume** and also **highly recommend** that you first **create a virtualenv** (e.g. `virtualenv $HOME/env/cons2label`), so the requeriments for `cons2label` do not interfere with other versions of packages that you might need for a different software.
 
 **Software**
 - Python 2.7
@@ -16,7 +16,7 @@ We **assume** and also **highly recommend** that you first **create a virtualenv
 - h5py 2.7.1
 - torch 0.3.1
 
-**Additional resources** You also might need to download the [pretrained models](http://grupolys.org/software/cons2labels-emnlp2018-resources/models-EMNLP2018.zip) and/or the [pretrained word embeddings](http://grupolys.org/software/cons2labels-emnlp2018-resources/embeddings-EMNLP2018.zip) used in this work.
+**Additional resources** You also might need to download the [pretrained models](http://grupolys.org/software/cons2label-emnlp2018-resources/models-EMNLP2018.zip) and/or the [pretrained word embeddings](http://grupolys.org/software/cons2label-emnlp2018-resources/embeddings-EMNLP2018.zip) used in this work.
 
 The script **`install.sh`** automatically installs the mentioned packages, assuming that you have previously created and activated your virtualenv (tested on Ubuntu 16.04, 64 bits). It also downloads the pretrained models and the pretrained word embeddings used in this work.
 
@@ -75,7 +75,7 @@ The `.seq_r`will be used to train the second sequential model (the one used to p
 
 ## Executing and evaluating the pre-trained models
 
-Download the pre-trained models [here](http://grupolys.org/software/cons2labels-emnlp2018-resources/models-EMNLP2018.zip).
+Download the pre-trained models [here](http://grupolys.org/software/cons2label-emnlp2018-resources/models-EMNLP2018.zip).
 
 We include pre-trained models based on three baselines: (1) Conditional Random Fields (CRF) (2) a one-hot vector multilayered perceptron (MLP) and (3) an MLP that uses word and postag embeddings as inputs (EMLP). We also (4) release more accurate models based on [NCRFpp++](https://github.com/jiesutd/NCRFpp), a recent neural sequence labeling framework by Yang & Zhang (2018).
 

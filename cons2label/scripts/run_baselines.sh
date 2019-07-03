@@ -1,5 +1,5 @@
 #Update this path to your virtual environment
-source /env/cons2labels/bin/activate
+source /env/cons2label/bin/activate
 
 TEST_NAME="test"
 INPUT=../dataset/ptb/ptb-$TEST_NAME.seq_lu

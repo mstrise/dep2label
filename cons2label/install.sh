@@ -8,9 +8,9 @@ pip install h5py==2.7.1
 pip install torch==0.3.1
 
 echo "Downloading external embeddings"
-wget http://grupolys.org/software/cons2labels-emnlp2018-resources/embeddings-EMNLP2018.zip .
+wget http://grupolys.org/software/cons2label-emnlp2018-resources/embeddings-EMNLP2018.zip .
 unzip embeddings-EMNLP2018 -d ./resources/
 
 echo "Downloading pretrained models"
-wget http://grupolys.org/software/cons2labels-emnlp2018-resources/models-EMNLP2018.zip .
+wget http://grupolys.org/software/cons2label-emnlp2018-resources/models-EMNLP2018.zip .
 unzip models-EMNLP2018.zip

@@ -19,10 +19,10 @@ import os
 from utils.metric import get_ner_fmeasure
 from model.seqmodel import SeqModel
 from utils.data import Data
-from cons2labels.utils import sequence_to_parenthesis
-from cons2labels.evaluate import posprocess_labels
+from cons2label.utils import sequence_to_parenthesis
+from cons2label.evaluate import posprocess_labels
 from dep2label import decodeDependencies
-from cons2labels import encoding2multitask as rebuild
+from cons2label import encoding2multitask as rebuild
 
 # Uncomment/Comment these lines to determine when and which GPU(s) to use
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -82,7 +82,6 @@ def predict_check(pred_variable, gold_variable, mask_variable):
     overlaped = (pred == gold)
     right_token = np.sum(overlaped * mask)
     total_token = mask.sum()
-#    print "right_token", right_token
     return right_token, total_token
 
 
@@ -163,7 +162,6 @@ def recover_nbest_label(
     mask_variable = mask_variable[word_recover]
     batch_size = pred_variable.size(0)
     seq_len = pred_variable.size(1)
-    # print pred_variable.size()
     nbest = pred_variable.size(2)
     mask = mask_variable.cpu().data.numpy()
     pred_tag = pred_variable.cpu().data.numpy()
@@ -215,7 +213,7 @@ def evaluate(data, model, name, inference, nbest=None):
     train_num = len(instances)
     total_batch = train_num // batch_size + 1
 
-    # D: Variable to collect the preds and gold prediction in multitask
+    # Variable to collect the preds and gold prediction in multitask
     # learning
     pred_labels = {idtask: [] for idtask in range(data.HP_tasks)}
     gold_labels = {idtask: [] for idtask in range(data.HP_tasks)}
@@ -273,7 +271,6 @@ def evaluate(data, model, name, inference, nbest=None):
                 for idtask, task_tag_seq in enumerate(tag_seq):
                     pred_label, _ = recover_label(
                         task_tag_seq, None, mask, data.label_alphabet[idtask], batch_wordrecover, inference=inference)
-                    # print("***", pred_label)
                     pred_labels[idtask] += pred_label
             else:
                 # for now
@@ -282,7 +279,6 @@ def evaluate(data, model, name, inference, nbest=None):
                 for idtask, task_tag_seq in enumerate(tag_seq):
                     pred_label, _ = recover_label(
                         task_tag_seq, None, mask, data.label_alphabet[index_task], batch_wordrecover, inference=inference)
-                    #print("***", pred_label)
                     pred_labels[idtask] += pred_label
                     index_task += 1
 
@@ -303,10 +299,7 @@ def evaluate(data, model, name, inference, nbest=None):
         if nbest:
             tasks_results.append(
                 (speed, acc, p, r, f, nbest_pred_labels[idtask], nbest_pred_scores[idtask]))
-            #tasks_results.append((speed,acc,p,r,f,nbest_pred_results, pred_scores))
         else:
-            #    print "idtask", idtask
-            #    print "pred_labels[idtask]", pred_labels[idtask]
             tasks_results.append(
                 (speed, acc, p, r, f, pred_labels[idtask], nbest_pred_scores[idtask]))
     return tasks_results
@@ -417,7 +410,6 @@ def batchify_with_label(input_batch_list, gpu, inference, volatile_flag=False):
     char_seq_lengths = torch.LongTensor(length_list)
     for idx, (seq, seqlen) in enumerate(zip(pad_chars, char_seq_lengths)):
         for idy, (word, wordlen) in enumerate(zip(seq, seqlen)):
-            # print len(word), wordlen
             char_seq_tensor[idx, idy, :wordlen] = torch.LongTensor(word)
 
     char_seq_tensor = char_seq_tensor[word_perm_idx].view(
@@ -484,8 +476,6 @@ def train(data):
         print("Optimizer illegal: %s" % (data.optimizer))
         exit(0)
     best_dev = -10
-    best_dev_dep_score = -10
-    best_dev_const_score = -10
 
     for idx in range(data.HP_iteration):
         epoch_start = time.time()
@@ -636,7 +626,7 @@ def train(data):
                     # evaluate the output comparing to the gold
                     command = [
                         "PYTHONPATH=" +
-                        data.cons2labels,
+                        data.cons2label,
                         "python",
                         data.evaluate,
                         " --input ",
@@ -701,7 +691,7 @@ def train(data):
 
                     command = [
                         "PYTHONPATH=" +
-                        data.cons2labels,
+                        data.cons2label,
                         "python",
                         data.evaluate,
                         " --input ",
@@ -750,50 +740,6 @@ def train(data):
 
             current_score = sum(current_scores) / len(current_scores)
             print "Current Score", current_score, "Previous best dev", best_dev
-
-        """
-        if data.choice_of_best_model=="strict_inclusive":
-            print("strict inclusive")
-            if current_score_depen>best_dev_dep_score and current_score_cons>best_dev_const_score:
-                print("New string inclusive: LAS "+repr(current_score_depen)+" F1 "+repr(current_score_cons))
-                print ("BOTH Exceed previous best acc score: LAS " + repr(best_dev_dep_score) + " F1 " + repr(best_dev_const_score))
-                best_dev_dep_score = current_score_depen
-                best_dev_const_score = current_score_cons
-                model_name = data.model_dir + ".model"
-                print "Overwritting model to", model_name
-                torch.save(model.state_dict(), model_name)
-            else:
-                print("sofar the best: LAS " + repr(best_dev_dep_score) + " F1 " + repr(best_dev_const_score))
-
-        elif data.choice_of_best_model=="harmonic_mean":
-            print("harmonic mean")
-            harmonic_mean = (2*current_score_cons*current_score_depen)/(current_score_cons+current_score_depen)
-            if harmonic_mean > best_dev:
-                print("New harmonic mean "+repr(harmonic_mean))
-                print ("Exceed previous best harmonic mean score: "+ repr(best_dev)+" LAS "+repr(current_score_depen)+" F1 "+repr(current_score_cons))
-                model_name = data.model_dir + ".model"
-                print "Overwritting model to", model_name
-                torch.save(model.state_dict(), model_name)
-                best_dev=harmonic_mean
-            else:
-                print("sofar the best "+repr(best_dev))
-
-        else:
-            print("best single score")
-            if current_score > best_dev:
-                if data.seg:
-                    print "Exceed previous best f score:", best_dev
-                else:
-                    print "Exceed previous best acc score:", best_dev
-
-                model_name = data.model_dir +".model"
-                print "Overwritting model to", model_name
-                torch.save(model.state_dict(), model_name)
-
-                best_dev = current_score
-            else:
-                print("sofar the best "+repr(best_dev))
-        """
 
         # SAVE THE BEST MODEL
 

@@ -1,11 +1,11 @@
 """
-Takes an output following the cons2labels encoding, transforms it into
+Takes an output following the cons2label encoding, transforms it into
 a parenthesized tree and evaluates it following the EVALB script
 
-python /home/david/git/cons2labels/evaluate.py \
+python /home/david/git/cons2label/evaluate.py \
 --input /tmp/ptb-dev.reversed \
 --gold /home/david/Escritorio/PTB_pred_tags/dev.trees \
---evalb /home/david/git/cons2labels/EVALB/evalb
+--evalb /home/david/git/cons2label/EVALB/evalb
 
 """
 

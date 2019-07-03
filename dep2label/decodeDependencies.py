@@ -19,15 +19,12 @@ def split_label_combined(multitag, multitask_char):
 
     if len(multitag) > 3:
         multitag_dep = multitag[3:]
-        m = multitag_dep[0].split("@")
-        labels.append(m[0])
-        labels.append(multitag_dep[1])
-        labels.append(m[1])
-    else:
-        m = multitag[0].split("@")
-        labels.append(m[0])
-        labels.append(multitag[1])
-        labels.append(m[1])
+
+    m = multitag_dep[0].split("@")
+    labels.append(m[0])
+    labels.append(multitag_dep[1])
+    labels.append(m[1])
+
 
     return labels
 

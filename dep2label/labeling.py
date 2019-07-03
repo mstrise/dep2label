@@ -8,7 +8,6 @@ class Encoding:
 
     def __init__(self):
 
-
         self.uxpostag = "UPOS"
         self.index_of_sentence = 1
         self.index_to_decode = 1
@@ -17,13 +16,7 @@ class Encoding:
                             "Korean":"root", "Polish":"pred", "Swedish":"ROOT"}
 
     def encode(self, gold_file_to_encode_labels, task):
-        """
-        :param gold_file_to_encode_labels: gold CONLL-X file to encode with labels:
-        :return: encoded_sentences: dictionary with words and their labels,
-                all_info_sentences: dictionary with all column information for each word (excluding word, head,
-                relation),
-                all_text: dictionary with special #text preceding each sentence in CONLLU file
-        """
+
         gold_sentence = {}
         all_info_words = {}
         all_info_sentences = {}
@@ -85,16 +78,7 @@ class Encoding:
         return encoded_sentences, all_info_sentences, all_text
 
     def decode(self, sentences_with_depend, output, language):
-        """
-        :param file_with_predicted_labels: output file of NCRFpp with the top 3 labels for each word
-                with its probabilities
-        :param encoding_type: [1,2,3,4]
-        :param all_sent: all_info_sentences: dictionary with all column information for each word (excluding word, head,
-                relation)
-        :return: sent_to_write_to_file: dictionary with lines in CONLL-X format to be written to a file
-                nb_words:
-        """
-        #output = "/home/michalina/seq2seq-multitask/outputDependency.conll"
+
         sent_to_write_to_file = {}
         nb_of_sentence = 1
         countNoRoot = 0
@@ -102,9 +86,6 @@ class Encoding:
         root = self.dict_roots[language]
         for sent_id in sentences_with_depend:
             count = 1;
-
-            #print("****")
-            #print(sent_id)
             sentence_to_decode = sentences_with_depend.get(sent_id)
             sent_with_index = {}
             sent_with_index[0] = ["ROOT", "ROOT", 0, root, "ROOT"]

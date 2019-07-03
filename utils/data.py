@@ -613,9 +613,9 @@ class Data:
         if the_item in config:
             self.language= (config[the_item])
             
-        the_item = "cons2labels"
+        the_item = "cons2label"
         if the_item in config:
-            self.cons2labels = config[the_item]
+            self.cons2label = config[the_item]
             
         the_item = "dependency_parsing"
         if the_item in config:

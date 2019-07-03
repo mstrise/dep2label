@@ -3,7 +3,7 @@
 '''
 
 from argparse import ArgumentParser
-from cons2labels.utils import sequence_to_parenthesis, get_enriched_labels_for_retagger, flat_list, \
+from cons2label.utils import sequence_to_parenthesis, get_enriched_labels_for_retagger, flat_list, \
     rebuild_input_sentence
 import codecs
 import os
@@ -11,7 +11,7 @@ import time
 import sys
 import uuid
 from dep2label import decodeDependencies
-from cons2labels import encoding2multitask as r
+from cons2label import encoding2multitask as r
 from utils.data import Data
 STATUS_TEST = "test"
 STATUS_TRAIN = "train"
@@ -158,7 +158,6 @@ if __name__ == '__main__':
         os.system(" ".join([data.evalb, args.gold_constituency, tmpfile.name]))
         os.remove("/tmp/" + decode_fid)
 
-        #print (raw_time, raw_unary_time, end_posprocess_time, end_parenthesized_time, end_merge_retags_time)
         total_time = raw_time + raw_unary_time + end_posprocess_time + end_parenthesized_time + end_merge_retags_time
         with codecs.open(args.output_constituency + ".seq_lu", "w") as f_out_seq_lu:
             for (sentence, sentence_preds) in zip(sentences, preds):
