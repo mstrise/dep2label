@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--encoded_file_constituency', dest="enc_constituency")
     parser.add_argument('--encoded_file_dependency',  dest="enc_dependency")
-    parser.add_argument('--merged_output', det="merged_output")
+    parser.add_argument('--merged_output', dest="merged_output")
 
     args = parser.parse_args()
     merge_treebank(args.enc_constituency, args.enc_dependency, args.merged_output)
