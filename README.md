@@ -1,6 +1,6 @@
 # Sequence Labeling Parsing by Learning Across Representations
 
-This repository contains the source code for the paper "Sequence Labeling Parsing by Learning Across Representation" that has been accepted for ACL 2019. 
+This repository contains the source code for the paper ["Sequence Labeling Parsing by Learning Across Representations"](https://arxiv.org/pdf/1907.01339.pdf) that has been accepted for ACL 2019. 
 
 ## Core idea
 
