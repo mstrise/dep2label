@@ -240,99 +240,73 @@ def decode_4(decoded_sentence, decoded_words, homeless_nodes):
                     if homeless_nodes.__contains__(index_of_word):
                         homeless_nodes.pop(index_of_word)
 
-                if proceeding_word[5] == "<L":
-                    # w(i) pointed by w(i+1). Remove w(i)
-                    info_about_word = decoded_sentence[index_of_word]
-                    words_full_info = {1: index_of_word, 2: info_about_word[2],
-                                       3: info_about_word[3],
-                                       4: info_about_word[4],
-                                       5: int(index_of_word) + 1,
-                                       6: info_about_word[6]}
-                    decoded_words.update({index_of_word: words_full_info})
-                    if homeless_nodes.__contains__(index_of_word):
-                        homeless_nodes.pop(index_of_word)
+                
+                # every time when you append an item check from the beggining of the list if something matches
+                # the pattern <\ or /> and remove it from the stack
+                for x in char:
 
-                elif proceeding_word[5] == "R>":
-                    # w(i+1) pointed by w(i). Remove w(i+1)
-                    proceeding_word[5] = index_of_word
-                    info_about_word = decoded_sentence[index_of_word + 1]
-                    words_full_info = {
-                        1: int(index_of_word) + 1,
-                        2: info_about_word[2],
-                        3: info_about_word[3],
-                        4: info_about_word[4],
-                        5: int(index_of_word),
-                        6: info_about_word[6]}
-                    decoded_words.update(
-                        {int(index_of_word) + 1: words_full_info})
-                    if homeless_nodes.__contains__(index_of_word + 1):
-                        homeless_nodes.pop(index_of_word + 1)
+                    if x == "<" or x == "L":
+                        x += "_" + repr(index_of_word + 1)
+                        # elements in the stack1 are concatenated symbols
+                        # f.ex "<_2"
+                        stack1.append(x)
+                        if len(stack1) > 1:
+                            for w in range(0, len(stack1), 1):
+                                if w + 1 < len(stack1):
+                                    s1 = stack1[w].rsplit("_", 1)
+                                    s2 = stack1[w + 1].rsplit("_", 1)
+                                    symbol = s1[0] + s2[0]
+                                    if symbol == "<L":
+                                        # w(i) pointed by w(i+1). Remove w(i)
+                                        pos = int(s1[1]) - 1
+                                        head = int(s2[1])
+                                        info_about_word = decoded_sentence[pos]
+                                        words_full_info = {
+                                            1: pos,
+                                            2: info_about_word[2],
+                                            3: info_about_word[3],
+                                            4: info_about_word[4],
+                                            5: head,
+                                            6: info_about_word[6]}
+                                        decoded_words.update(
+                                            {pos: words_full_info})
+                                        if homeless_nodes.__contains__(
+                                                pos):
+                                            homeless_nodes.pop(pos)
 
-                else:
-                    # every time when you append an item check from the beggining of the list if something matches
-                    # the pattern <\ or /> and remove it from the stack
-                    for x in char:
-
-                        if x == "<" or x == "L":
-                            x += "_" + repr(index_of_word + 1)
-                            # elements in the stack1 are concatenated symbols
-                            # f.ex "<_2"
-                            stack1.append(x)
-                            if len(stack1) > 1:
-                                for w in range(0, len(stack1), 1):
-                                    if w + 1 < len(stack1):
-                                        s1 = stack1[w].rsplit("_", 1)
-                                        s2 = stack1[w + 1].rsplit("_", 1)
-                                        symbol = s1[0] + s2[0]
-                                        if symbol == "<L":
-                                            pos = int(s1[1]) - 1
-                                            head = int(s2[1])
-                                            info_about_word = decoded_sentence[pos]
-                                            words_full_info = {
-                                                1: pos,
-                                                2: info_about_word[2],
-                                                3: info_about_word[3],
-                                                4: info_about_word[4],
-                                                5: head,
-                                                6: info_about_word[6]}
-                                            decoded_words.update(
-                                                {pos: words_full_info})
-                                            if homeless_nodes.__contains__(
-                                                    pos):
-                                                homeless_nodes.pop(pos)
-
-                                            # remove the w and w+1
-                                            w1 = stack1[w]
-                                            w2 = stack1[w + 1]
-                                            stack1.remove(w1)
-                                            stack1.remove(w2)
-                        if x == ">" or x == "R":
-                            x += "_" + repr(index_of_word + 1)
-                            stack2.append(x)
-                            if len(stack2) > 1:
-                                for w in range(0, len(stack2), 1):
-                                    if w + 1 < len(stack2):
-                                        s1 = stack2[w].rsplit("_", 1)
-                                        s2 = stack2[w + 1].rsplit("_", 1)
-                                        symbol = s1[0] + s2[0]
-                                        if symbol == "R>":
-                                            pos = int(s2[1])
-                                            head = int(s1[1]) - 1
-                                            info_about_word = decoded_sentence[pos]
-                                            words_full_info = {
-                                                1: pos,
-                                                2: info_about_word[2],
-                                                3: info_about_word[3],
-                                                4: info_about_word[4],
-                                                5: head,
-                                                6: info_about_word[6]}
-                                            decoded_words.update(
-                                                {pos: words_full_info})
-                                            if homeless_nodes.__contains__(
-                                                    pos):
-                                                homeless_nodes.pop(pos)
-                                            # remove the w and w+1
-                                            w1 = stack2[w]
-                                            w2 = stack2[w + 1]
-                                            stack2.remove(w1)
-                                            stack2.remove(w2)
+                                        # remove the w and w+1
+                                        w1 = stack1[w]
+                                        w2 = stack1[w + 1]
+                                        stack1.remove(w1)
+                                        stack1.remove(w2)
+                    if x == ">" or x == "R":
+                        x += "_" + repr(index_of_word + 1)
+                        stack2.append(x)
+                        if len(stack2) > 1:
+                            for w in range(0, len(stack2), 1):
+                                if w + 1 < len(stack2):
+                                    s1 = stack2[w].rsplit("_", 1)
+                                    s2 = stack2[w + 1].rsplit("_", 1)
+                                    symbol = s1[0] + s2[0]
+                                    if symbol == "R>":
+                                        # w(i+1) pointed by w(i). Remove w(i+1)
+                                        pos = int(s2[1])
+                                        head = int(s1[1]) - 1
+                                        info_about_word = decoded_sentence[pos]
+                                        words_full_info = {
+                                            1: pos,
+                                            2: info_about_word[2],
+                                            3: info_about_word[3],
+                                            4: info_about_word[4],
+                                            5: head,
+                                            6: info_about_word[6]}
+                                        decoded_words.update(
+                                            {pos: words_full_info})
+                                        if homeless_nodes.__contains__(
+                                                pos):
+                                            homeless_nodes.pop(pos)
+                                        # remove the w and w+1
+                                        w1 = stack2[w]
+                                        w2 = stack2[w + 1]
+                                        stack2.remove(w1)
+                                        stack2.remove(w2)
