@@ -31,7 +31,6 @@ MANIFEST
 dep_confs/
 confs/
 tree2labels/
-model/
 sample_data/
 
 # PyInstaller
