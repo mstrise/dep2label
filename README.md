@@ -214,6 +214,10 @@ python decode.py --test $PATH_ENCODED_TESTSET [--gold_constituency] $PATH_GOLD_T
 * ```--output_dependency``` path to dependency output file. Only if ```dependency_parsing=True```
 * ```--ncrfpp``` path to the directory containing main.py and decode.py
 
+## Acknowledgements
+
+This work has received funding from the European Research Council (ERC), under the European Union's Horizon 2020 research and innovation programme (FASTPARSE, grant agreement No 714150).
+
 ## Reference
 
 If you wish to use our work for research purposes, please cite us!
