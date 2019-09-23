@@ -222,15 +222,20 @@ This work has received funding from the European Research Council (ERC), under t
 
 If you wish to use our work for research purposes, please cite us!
 ```
-@InProceedings{SequenceLabelingParsingMTL2019,
- author    = {Strzyz, Michalina and Vilares, David and G\'omez-Rodr\'iguez, Carlos},
- title     = {Sequence Labeling Parsing by Learning Across Representation},
- booktitle = {Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics
- (ACL 2019)},
- year      = {2019},
- address   = {Florence, Italy},
- publisher = {Association for Computational Linguistics},
- pages     = {to appear}
+@inproceedings{strzyz-etal-2019-sequence,
+    title = "Sequence Labeling Parsing by Learning across Representations",
+    author = "Strzyz, Michalina  and
+      Vilares, David  and
+      G{\'o}mez-Rodr{\'\i}guez, Carlos",
+    booktitle = "Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics",
+    month = jul,
+    year = "2019",
+    address = "Florence, Italy",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/P19-1531",
+    doi = "10.18653/v1/P19-1531",
+    pages = "5350--5357",
+    abstract = "We use parsing as sequence labeling as a common framework to learn across constituency and dependency syntactic abstractions.To do so, we cast the problem as multitask learning (MTL). First, we show that adding a parsing paradigm as an auxiliary loss consistently improves the performance on the other paradigm. Secondly, we explore an MTL sequence labeling model that parses both representations, at almost no cost in terms of performance and speed. The results across the board show that on average MTL models with auxiliary losses for constituency parsing outperform single-task ones by 1.05 F1 points, and for dependency parsing by 0.62 UAS points.",
 }
 ```
 
