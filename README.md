@@ -135,12 +135,15 @@ python encode_trees2labels.py --fileToEncode $PATH_TO_THE_CONLLU_FILE --output $
 $TYPE_OF_ENCODING:1,2,3,4 --pos $UPOS/XPOS
 ```
 
+## Acknowledgements
+
+This work has received funding from the European Research Council (ERC), under the European Union's Horizon 2020 research and innovation programme (FASTPARSE, grant agreement No 714150).
 
 ## Reference
 
 If you wish to use our work for research purposes, please cite us!
 ```
-@inproceedings{StrVilGomNAACL2019,
+@inproceedings{strzyz-etal-2019-viable,
     title = "Viable Dependency Parsing as Sequence Labeling",
     author = "Strzyz, Michalina  and
       Vilares, David  and
@@ -151,7 +154,9 @@ If you wish to use our work for research purposes, please cite us!
     address = "Minneapolis, Minnesota",
     publisher = "Association for Computational Linguistics",
     url = "https://www.aclweb.org/anthology/N19-1077",
+    doi = "10.18653/v1/N19-1077",
     pages = "717--723",
+    abstract = "We recast dependency parsing as a sequence labeling problem, exploring several encodings of dependency trees as labels. While dependency parsing by means of sequence labeling had been attempted in existing work, results suggested that the technique was impractical. We show instead that with a conventional BILSTM-based model it is possible to obtain fast and accurate parsers. These parsers are conceptually simple, not needing traditional parsing algorithms or auxiliary structures. However, experiments on the PTB and a sample of UD treebanks show that they provide a good speed-accuracy tradeoff, with results competitive with more complex approaches.",
 }
 ```
 
