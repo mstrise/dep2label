@@ -16,7 +16,10 @@ Each input token is encoded into a label that preserves information about its he
 
 ##### Types of encoding with examples
 
-![encodings](https://github.com/mstrise/seq2label/blob/master/figs/encodings.png)
+<p align="center">
+  <img src="https://github.com/mstrise/seq2label/blob/master/figs/encodings.png">
+</p>
+
 
 1. __Naive positional encoding__: encodes the real index position in the sentence of the head. A label
  ```2_nsubj``` for the token _Alice_
