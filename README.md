@@ -163,6 +163,10 @@ python parse.py --test xx --goldDependency xx --model xx/mod --status test --gpu
 * ```--offset``` True/False. Forst best performance- True. The first two tuple are learned 
 as a single task in dependency parsing (check explanation of that [here](https://github.com/mstrise/seq2label-crossrep#encoding-trees-into-labels))
 
+## Acknowledgements
+
+This work has received funding from the European Research Council (ERC), under the European Union's Horizon 2020 research and innovation programme (FASTPARSE, grant agreement No 714150).
+
 ## Reference
 
 If you wish to use our work for research purposes, please cite us!
