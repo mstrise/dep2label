@@ -3,6 +3,12 @@
 This is the source code for the paper "Towards Making a Dependency Parser See" that has been
 accepted for EMNLP 2019.
 
+------------------------------------------------------------------------------------------------------------------
+***NEW VERSION OF THE CODE WITH PYTHON3+ AND PYTORCH 1+ IS AVAILABLE [HERE](https://github.com/mstrise/dep2label-up)***.
+The code includes Sequence Labeling Parsing for Dependency parsing with Multi-Task Learning, although only on parallel data.
+
+-------------------------------------------------------------------------------------------------------------------
+
 ## What is this paper about?
 
 In short, the main idea is to use human eye movement data to guide a dependency parser (although in principle
