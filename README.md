@@ -7,6 +7,11 @@ parsing without using any traditional parsing algorithms. The repository contain
 code for the paper ["Viable Dependency Parsing as Sequence Labeling"](https://www.aclweb.org/anthology/N19-1077) that has been accepted
 by NAACL 2019.
 
+------------------------------------------------------------------------------------------------------------------
+***NEW VERSION OF THE CODE WITH PYTHON3+ AND PYTORCH 1+ IS AVAILABLE [HERE](https://github.com/mstrise/dep2label-up)***.
+The code includes Multi-Task Learning, although the top 3 probable labels (as explained in the paper) are no longer retrieved. In order to reproduce the results reported in the paper, use the previous version of the code.
+
+-------------------------------------------------------------------------------------------------------------------
 
 #### How does Dependency Parsing as Sequence Labeling work in short?
 
