@@ -2,6 +2,12 @@
 
 This repository contains the source code for the paper ["Sequence Labeling Parsing by Learning Across Representations"](https://arxiv.org/pdf/1907.01339.pdf) that has been accepted for ACL 2019. 
 
+------------------------------------------------------------------------------------------------------------------
+***NEW VERSION OF THE CODE WITH PYTHON3+ AND PYTORCH 1+ IS AVAILABLE [HERE](https://github.com/mstrise/dep2label-up)***.
+The code includes Multi-Task Learning, although it's only working for dependency parsing.
+
+-------------------------------------------------------------------------------------------------------------------
+
 ## Core idea
 
 Recent research has shown that constituency and dependency parsing can be recast 
