@@ -148,7 +148,7 @@ if __name__ == '__main__':
                         if l.startswith("raw: time:")][0].split(",")[0].replace("raw: time:","").replace("s",""))
             os.remove(decode_unary_fid)
             os.remove(+fid)
-        os.system(" ".join([args.evalb,args.gold, tmpfile.name]))
+        os.system(" ".join([args.evalb, "-p", args.evalb_param, args.gold, tmpfile.name]))
         os.remove(decode_fid)
 
         total_time = raw_time+raw_unary_time+end_posprocess_time+end_parenthesized_time+end_merge_retags_time

@@ -44,6 +44,7 @@ if __name__ == '__main__':
     arg_parser.add_argument("--output_dependency", help="output path for parsed dependency tree", dest="output_dependency")
     arg_parser.add_argument("--ncrfpp", dest="ncrfpp", help="Path to the NCRFpp repository", required=True)
     arg_parser.add_argument("--multitask", dest="multitask", default=False, action="store_true")
+    arg_parser.add_argument("--evalb_param", dest="evalb_param", help="Path to the EVALB param file", default=None)
 
 
     args = arg_parser.parse_args()
@@ -155,7 +156,7 @@ if __name__ == '__main__':
         raw_time = float([l for l in log_lines
                           if l.startswith("raw: time:")][0].split(",")[0].replace("raw: time:", "").replace("s", ""))
         raw_unary_time = 0
-        os.system(" ".join([data.evalb, args.gold_constituency, tmpfile.name]))
+        os.system(" ".join([data.evalb, "-p", args.evalb_param, args.gold_constituency, tmpfile.name]))
         os.remove("/tmp/" + decode_fid)
 
         total_time = raw_time + raw_unary_time + end_posprocess_time + end_parenthesized_time + end_merge_retags_time

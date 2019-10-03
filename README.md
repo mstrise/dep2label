@@ -208,7 +208,7 @@ constituency_parsing=True
 ## Parse with a pre-trained model
 
 ```bash
-python decode.py --test $PATH_ENCODED_TESTSET [--gold_constituency] $PATH_GOLD_TESTSET_FOR_CONST [--gold_dependency] $PATH_GOLD_TESTSET_FOR_DEPEN --model $PATH_TO_MODEL --status test --gpu False [--multitask] [--output_constituency] $PATH_OUTPUT_CONS [--output_dependency] $PATH_OUTPUT_DEPEN --ncrfpp $PATH_TO_NCRFPP 
+python decode.py --test $PATH_ENCODED_TESTSET [--gold_constituency] $PATH_GOLD_TESTSET_FOR_CONST [--gold_dependency] $PATH_GOLD_TESTSET_FOR_DEPEN --model $PATH_TO_MODEL --status test --gpu False [--multitask] [--output_constituency] $PATH_OUTPUT_CONS [--output_dependency] $PATH_OUTPUT_DEPEN --ncrfpp $PATH_TO_NCRFPP [--evalb_param] $PATH_EVALB_PARAM
 ```
 * ```--test``` path to the encoded testset
 * ```--gold_constituency``` path to the gold constituency file. Required when  ```constituency_parsing=True``` defined in the config file
@@ -219,6 +219,7 @@ python decode.py --test $PATH_ENCODED_TESTSET [--gold_constituency] $PATH_GOLD_T
 * ```--output_constituency``` path to constituency output file. Only if ```constituency_parsing=True```
 * ```--output_dependency``` path to dependency output file. Only if ```dependency_parsing=True```
 * ```--ncrfpp``` path to the directory containing main.py and decode.py
+* ```--evalb_param``` path to: when evaluated on PTB "cons2labels/EVALB/COLLINS.prm" or SPMRL "cons2labels/EVAL_SPRML/evalb_spmrl2013.final/spmrl.prm". Only if ```constituency_parsing=True```
 
 ## Acknowledgements
 
