@@ -13,6 +13,12 @@ The code includes Multi-Task Learning, although the top 3 probable labels (as ex
 
 -------------------------------------------------------------------------------------------------------------------
 
+**Follow up papers on Sequence Labeling Parsing**
+
+* [ACL2019] Labels of constituency and dependency trees are learned as auxiliary task(s) in the Multi-task framework (MTL). More details [here](https://github.com/mstrise/seq2label-crossrep).
+
+* [EMNLP2019] Sequence Labeling Parser is guided by human eye movements (with a help of eye-tracking data). More details [here](https://github.com/mstrise/dep2label-eye-tracking-data).
+
 #### How does Dependency Parsing as Sequence Labeling work in short?
 
 ###### ENCODING
