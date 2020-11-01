@@ -53,10 +53,10 @@ class Alphabet:
                 self.add(instance)
                 return index
             else:
-		try:
-                	return self.instance2index[self.UNKNOWN]
-	    	except KeyError:
-			return 0
+                try:
+                    return self.instance2index[self.UNKNOWN]
+                except KeyError:
+                    return 0
 
     def get_instance(self, index):
         if index == 0:

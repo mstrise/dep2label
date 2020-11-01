@@ -27,11 +27,10 @@ EOM
 ;
   exit(1) ;
 }
-
 require Encode;
 
 use strict ;
-use warnings;
+#use warnings;
 use Getopt::Std ;
 
 my ($usage) = <<EOT
@@ -54,6 +53,7 @@ my ($usage) = <<EOT
      -d : deriv:       do not score on DERIV links (default is to score)
      -v : version:     show the version number
      -h : help:        print this help text and exit
+     -L:  line output 	display the results in one line (to use with -q)
 
 EOT
 ;
@@ -68,7 +68,7 @@ my ($con_err_num) = 3 ;
 my ($freq_err_num) = 10 ;
 my ($spec_err_loc_con) = 8 ;
 
-our ($opt_g, $opt_s, $opt_o, $opt_h, $opt_v, $opt_q, $opt_p, $opt_b, $opt_d) ;
+our ($opt_g, $opt_s, $opt_o, $opt_h, $opt_v, $opt_q, $opt_p, $opt_b, $opt_d,$opt_L) ;
 my ($word_mismatch_warning);
 
 
@@ -424,7 +424,14 @@ sub read_sent
 
     $line_g = <GOLD> ;
     $line_s = <SYS> ;
-
+    # added by djame to cope with connlU file
+ #   if((defined $line_g) && ( defined $line_s)){
+#		if($line_g=~/^#/){
+#			next;
+#		}elsif($line_g=~/^\d+-\d+/){
+#			next;
+#		}
+#	}
     $line_num++ ;
 
     # system output has fewer lines than gold standard
@@ -448,7 +455,7 @@ sub read_sent
 	    next;
 	}
 	printf STDERR "Fatal: line mismatch, line %d:\n", $line_num ;
-	printf STDERR " gold: past end of file\n" ;
+	printf STDERR " gold: past end of file\n" ;die "here";
 	printf STDERR " sys : %s", $line_s ;
 	exit(1) ;
     }
@@ -461,15 +468,16 @@ sub read_sent
 
     # one contains end of sentence but other one does not
     if (($line_g =~ /^\s+$/) != ($line_s =~ /^\s+$/))
-    {
-      printf STDERR "Fatal: line mismatch, line %d:\n", $line_num ;
+    {		
+      printf STDERR "Fatal: line mismatch, line %d, file $opt_s:\n", $line_num ;
       printf STDERR " gold: %s", $line_g ;
       printf STDERR " sys : %s", $line_s ;
+      print STDERR "***** DEBUG: eval07.pl -q -g $opt_g -s $opt_s\n";
       exit(1) ;
     }
 
     # end of sentence reached
-    if ($line_g =~ /^\s+$/)
+    if ($line_g =~ /^\s*$/)
     {
 	return(0) ;
     }
@@ -485,12 +493,17 @@ sub read_sent
     # options.output = ['id','form','lemma','cpostag','postag',
     #                   'feats','head','deprel','phead','pdeprel']
 
-    @fields_g{'word', 'pos', 'head', 'dep'} = (split (/\s+/, $line_g))[1, 3, 6, 7] ;
+    @fields_g{'word', 'pos', 'head', 'dep','fpos'} = (split (/\s+/, $line_g))[1, 3, 6, 7, 4] ; #fpos added by Djame for spmrl2013
+
+	#$fields_g{'dep'}=~s/dep_cpd/dep/g;
+	
+	
 
     push @{$sent_gold}, { %fields_g } ;
 
-    @fields_s{'word', 'pos', 'head', 'dep'} = (split (/\s+/, $line_s))[1, 3, 6, 7] ;
-
+    @fields_s{'word', 'pos', 'head', 'dep','fpos'} = (split (/\s+/, $line_s))[1, 3, 6, 7, 4] ; #fpos added by Djame for spmrl2013
+	#$fields_s{'dep'}=~s/dep_cpd/dep/g;
+	
 # Some teams like to change the word or the pos in the answer file...
 # So do not make this fatal and only give one warning.
 
@@ -499,9 +512,9 @@ sub read_sent
 	 ($fields_g{pos} ne $fields_s{pos})))
     {
 	$word_mismatch_warning = 1;
-	printf STDERR "Warning: ignoring word/pos mismatch, line %d:\n", $line_num ;
-	printf STDERR " gold: %s", $line_g ;
-	printf STDERR " sys : %s", $line_s ;
+#	printf STDERR "Warning: ignoring word/pos mismatch, line %d:\n", $line_num ;
+#	printf STDERR " gold: %s", $line_g ;
+#	printf STDERR " sys : %s", $line_s ;
 	# exit(1) ;
     }
 
@@ -517,8 +530,8 @@ sub read_sent
 
 my ($sent_num, $eof, $word_num, @err_sent) ;
 my (@sent_gold, @sent_sys, @starts) ;
-my ($word, $pos, $wp, $head_g, $dep_g, $head_s, $dep_s) ;
-my (%counts, $err_head, $err_dep, $con, $con1, $con_pos, $con_pos1, $thresh) ;
+my ($word, $pos, $fpos, $wp, $head_g, $dep_g, $head_s, $dep_s,$pos_g,$pos_s,$fpos_g,$fpos_s) ;
+my (%counts, $err_head, $err_dep, $err_pos, $err_fpos, $con, $con1, $con_pos, $con_pos1, $thresh) ;
 my ($head_err, $dep_err, @cur_err, %err_counts, $err_counter, $err_desc) ;
 my ($loc_con, %loc_con_err_counts, %err_desc) ;
 my ($head_aft_bef_g, $head_aft_bef_s, $head_aft_bef) ;
@@ -537,8 +550,19 @@ my ($short_output) ;
 my ($score_on_punct, $score_on_deriv) ;
 $counts{punct} = 0; # initialize
 $counts{deriv} = 0;
+$counts{punct}=0;
+# added by djamÃ© (caused a bug somehow)
+$counts{err_any}=0;
+$counts{err_head}{tot}=0;
+$counts{err_dep}{tot}=0;
+$counts{err_pos}{tot}=0;
+$counts{err_fpos}{tot}=0;
 
-getopts("g:o:s:qvhpbd") ;
+my $COMPACT_VIEW=0;  # djame
+
+
+
+getopts("g:o:s:qvhpbdL") ;
 
 if (defined $opt_v)
 {
@@ -589,6 +613,17 @@ if (defined $opt_d)
     $score_on_deriv = 1 ;
 }
 
+# djame
+if (defined $opt_L)
+{
+    $COMPACT_VIEW = 1 ;
+} else {
+	$COMPACT_VIEW = 0 ;
+}
+
+
+
+
 $line_num = 0 ;
 $sent_num = 0 ;
 $eof = 0 ;
@@ -616,6 +651,7 @@ if (defined $opt_b) {  # produce output similar to evalb
 }
 
 
+
 while (! $eof)
 { # main reading loop
 
@@ -630,7 +666,9 @@ while (! $eof)
   # for accuracy per sentence
   my %sent_counts = ( tot      => 0,
 		      err_any  => 0,
-		      err_head => 0
+		      err_head => 0,
+			  err_pos => 0,  # added by djame for spmrl 2013 ST
+			  err_fpos => 0,  # added by djame for spmrl 2013 ST
 		      ); 
 
   # printf "$sent_num $word_num\n" ;
@@ -645,9 +683,9 @@ while (! $eof)
 
   foreach $i_w (0 .. $word_num-1)
   { # loop on words
-
-    ($word, $pos, $head_g, $dep_g)
-      = @{$sent_gold[$i_w]}{'word', 'pos', 'head', 'dep'} ;
+	  # alf fpos added for spmrl2013
+    ($word, $pos, $head_g, $dep_g,$fpos)
+      = @{$sent_gold[$i_w]}{'word', 'pos', 'head', 'dep','pos','fpos'} ;
     $wp = $word.' / '.$pos ;
 
     # printf "%d: %s %s %s %s\n", $i_w,  $word, $pos, $head_g, $dep_g ;
@@ -655,7 +693,6 @@ while (! $eof)
     if ((! $score_on_punct) && is_uni_punct($word))
     {
       $counts{punct}++ ;
-#printf "%s %s %s\n", $word, $dep_g,  $pos;
       # ignore punctuations
       next ;
     }
@@ -677,6 +714,7 @@ while (! $eof)
     $counts{tot}++ ;
     $counts{word}{$wp}{tot}++ ;
     $counts{pos}{$pos}{tot}++ ;
+	 $counts{fpos}{$fpos}{tot}++ ; #added by djame
     $counts{head}{$head_g-$i_w-1}{tot}++ ;
 
     # for frame confusions
@@ -976,12 +1014,21 @@ while (! $eof)
 if (defined $opt_b) {  # produce output similar to evalb
     print OUT "\n\n";
 }
-printf OUT "  Labeled   attachment score: %d / %d * 100 = %.2f %%\n", 
-    $counts{tot}-$counts{err_any},      $counts{tot}, 100-$counts{err_any}*100.0/$counts{tot} ;
-printf OUT "  Unlabeled attachment score: %d / %d * 100 = %.2f %%\n", 
-    $counts{tot}-$counts{err_head}{tot}, $counts{tot}, 100-$counts{err_head}{tot}*100.0/$counts{tot} ;
-printf OUT "  Label accuracy score:       %d / %d * 100 = %.2f %%\n", 
-    $counts{tot}-$counts{err_dep}{tot}, $counts{tot}, 100-$counts{err_dep}{tot}*100.0/$counts{tot} ;
+
+if ($COMPACT_VIEW == 0){
+	printf OUT "  Labeled   attachment score: %d / %d * 100 = %.2f %%\n", 
+	    $counts{tot}-$counts{err_any},      $counts{tot}, 100-$counts{err_any}*100.0/$counts{tot} ;
+	printf OUT "  Unlabeled attachment score: %d / %d * 100 = %.2f %%\n", 
+	    $counts{tot}-$counts{err_head}{tot}, $counts{tot}, 100-$counts{err_head}{tot}*100.0/$counts{tot} ;
+	printf OUT "  Label accuracy score:       %d / %d * 100 = %.2f %%\n", 
+	    $counts{tot}-$counts{err_dep}{tot}, $counts{tot}, 100-$counts{err_dep}{tot}*100.0/$counts{tot} ;
+	
+}else{
+	printf OUT "LAS: %.2f %%\tUAS: %.2f %%\tLaS: %.2f %%\t%s\n",100-$counts{err_any}*100.0/$counts{tot}, 100-$counts{err_head}{tot}*100.0/$counts{tot}, 100-$counts{err_dep}{tot}*100.0/$counts{tot},$opt_s;   
+
+}
+
+
 
 if ($short_output)
 {
@@ -1468,7 +1515,6 @@ while (! $eof)
     if ((! $score_on_punct) && is_uni_punct($word))
     {
       # ignore punctuations
-     
       next ;
     }
 

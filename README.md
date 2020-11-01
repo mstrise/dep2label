@@ -1,152 +1,105 @@
-# Viable Dependency Parsing as Sequence Labeling
+# Dependency Parsing as Sequence Labeling
 
-We recast dependency parsing as a sequence labeling problem
-where each input word from a sentence is represented as a label
-using one of four encodings. Our BILSTM-based models yield fast and accurate dependency
-parsing without using any traditional parsing algorithms. The repository contains source
-code for the paper ["Viable Dependency Parsing as Sequence Labeling"](https://www.aclweb.org/anthology/N19-1077) that has been accepted
-by NAACL 2019.
-
-------------------------------------------------------------------------------------------------------------------
-***NEW VERSION OF THE CODE WITH PYTHON3+ AND PYTORCH 1+ IS AVAILABLE [HERE](https://github.com/mstrise/dep2label-up)***.
-The code includes Multi-Task Learning, although the top 3 probable labels (as explained in the paper) are no longer retrieved. In order to reproduce the results reported in the paper, use the previous version of the code.
-
--------------------------------------------------------------------------------------------------------------------
-
-**Follow up papers on Sequence Labeling Parsing**
-
-* [ACL2019] Labels of constituency and dependency trees are learned as auxiliary task(s) in the Multi-task framework (MTL). More details [here](https://github.com/mstrise/seq2label-crossrep).
-
-* [EMNLP2019] Sequence Labeling Parser is guided by human eye movements (with a help of eye-tracking data). More details [here](https://github.com/mstrise/dep2label-eye-tracking-data).
-
-#### How does Dependency Parsing as Sequence Labeling work in short?
-
-###### ENCODING
-
-Each input token is encoded into a label that preserves information about its head and relation.
-
-##### Types of encoding with examples
-
-<p align="center">
-  <img src="https://github.com/mstrise/seq2label/blob/master/figs/encodings.png">
-</p>
+This repository contains the code with a collection of encodings proposed for Dependency Parsing as Sequence Labeling with [NCRF++](https://github.com/jiesutd/NCRFpp). 
 
 
-1. __Naive positional encoding__: encodes the real index position in the sentence of the head. A label
- ```2_nsubj``` for the token _Alice_
-means "the head of the word _Alice_ is at index 2 with the relation nsubj"
-2. __Relative positional encoding__: encodes the difference between the index position of the head
-and its dependent (- sign when the head is on the left side of the word and + sign otherwise).
-A label  ```+1_nsubj``` for the token _Alice_
-means "the head of the word _Alice_ is at index position +1 to the right from that word with the relation nsubj"
-3. __Relative PoS-based encoding__: encodes the the distance of the head's PoS tag from its dependent
-(- sign when the head is on the left side of the word and + sign otherwise).
-A label ```V_+1_nsubj``` for the token _Alice_
-means "the head of the word _Alice_ is the first word to the right with a PoS tag V and with the relation nsubj"
-4. __Bracketing-based encoding__: represents words referring to the form of regular expressions.
-A label ```<\>_dobj``` for the token _apple_
-means "the word _apple_ is the head of the preceding word indicated by```<\ ``` and has an incoming arc from a word
-somewhere to the left ```>``` with the relation dobj".
-
-More detailed explanation of the encodings can be found in the paper.
-
-An example line from a file in the
-[CONLL format](https://universaldependencies.org/format.html): ```1    Alice   _   NNP NNP _   2   nsubj   _   _       ```
-can be tansformed with ```encoding 3``` into a new format (token + its label) that will be fed into [NCRF++](https://github.com/jiesutd/NCRFpp):```Alice    V_+1_nsubj    ```
+**Dependency Parsing as Sequence Labeling is also available with BERT** 🠊 [repository](https://github.com/mstrise/dep2label-bert/tree/master) 
 
 
-###### NCRF++
+This is the source code for the following papers accepted at COLING2020:
 
-We use [NCRF++](https://github.com/jiesutd/NCRFpp): An Open-source Neural Sequence Labeling Toolkit that
- we slightly
-modified. It is recommended to familiarize oneself with this system and its architecture for better understanding.
+* "Bracketing Encodings for 2-Planar Dependency Parsing"
+* "A Unifying Theory of Transition-based and Sequence Labeling Parsing"
+
+### Overview of the Encoding Family for Dependency Parsing in SL
+
+| Name       | Type of encoding         | supports non-projectivity?  | 
+| ------------- |:-------------:| :-------------:|
+| ```rel-pos```     | Relative Part-of-Speech-based | :heavy_check_mark: |
+| ```1-planar-brackets```     | Bracketing-based      |  :heavy_check_mark: / &#10007; | 
+| ```2-planar-brackets-greedy``` |   Second-Plane-Averse Greedy Plane Assignment    |   :heavy_check_mark:  | 
+| ```2-planar-brackets-propagation```  |   Second-Plane-Averse Plane Assignment based on Restriction Propagation on the Crossings Graph   |   :heavy_check_mark:  |
+| ```arc-standard```  |  Arc Standard in Transition-based   |   &#10007;  | 
+| ```arc-eager```  |  Arc Eager in Transition-based   |   &#10007;  | 
+| ```arc-hybrid```   | Arc Hybrid in Transition-based    |   &#10007;  | 
+| ```covington```  |  Covington in Transition-based    |   :heavy_check_mark:  | 
 
 
-###### DECODING
 
-As the last step, the output of [NCRF++](https://github.com/jiesutd/NCRFpp) is decoded and transformed back to the
-CONLL
-format. Additionally, the output is postprocessed in order to assure that each sentence is well-formed (for instance
-that the
-system only outputs acyclic syntactic trees or if no root is predicted the system searches throught the
-top 3 most probably labels for each token). A more detailed explanation can be found in the paper.
+Relative PoS-based and 1-planar bracketing-based encoding are described in *"Viable Dependency Parsing as Sequence Labeling"* (NAACL2019): [[paper]](https://www.aclweb.org/anthology/N19-1077.pdf) | [[code for results reproducibility]](https://github.com/mstrise/dep2label/tree/naacl2019).
 
+In addition, one may be interested in using SL with:
+* constituency parsing representations as described in *"Sequence Labeling Parsing by Learning Across Representations"* (ACL2019): [[paper]](https://www.aclweb.org/anthology/P19-1531.pdf) | [[code]](https://github.com/mstrise/dep2label/tree/acl2019)
+* human data (gaze features) as described in *"Towards Making a Dependency Parser See"*(EMNLP2019): [[paper]](https://www.aclweb.org/anthology/D19-1160.pdf) | [[code]](https://github.com/mstrise/dep2label/tree/emnlp2019)
 
 ## Requirements
 
-It is recommended to create a virtual environment in order to keep the installed packages separate to avoid conflicts
- with
-other programs.
+The code is based on [NCRF++](https://github.com/jiesutd/NCRFpp) and Constituency Parsing as Sequence Labeling [code](https://github.com/aghie/tree2labels).
 
-* ```Python 2.7```
-* ```PyTorch 0.3```
+It is recommended to create a virtual environment in order to keep the installed packages separate to avoid conflicts with other programs.
 
-The program was tested on Ubuntu 16.04, Python 2.7.12, PyTorch 0.3.1.
+```sh
+pip install -r requirements.txt
+```
 
-## Usage
 
-#### Train a model
+## Scripts for encoding and decoding dependency labels
+
+
+To encode a CoNNL-X file to SL file:
 
 ```bash
-python main.py --train-config $PATH_TO_CONFIG_FILE_FOR_TRAINING --decode-config $PATH_TO_CONFIG_FILE_FOR_DECODING
+python encode_dep2labels.py --input --output --encoding [--mtl] 
 ```
-* ```--train-config``` an example of a [config file for training](https://github.com/mstrise/seq2label/blob/master/config/train.config), where
-
-
-```Python
-### I/O ###
-train_gold=...  # gold file for training
-dev_gold=...    # gold file for evaluation on the development set
-train_enc_dep2label=... # file to which the system will write the encoded dependency tree with its labels for training set
-dev_enc_dep2label=...   # file to which the system will write the encoded dependency tree with its labels for dev set
-model_dir=... # directory where model will be stored
-word_emb_dir=...    # extrernal word embeddings
-encoding=...    # type of encoding that one wants to use: 1,2,3 or 4. Encoding 3 is set as default for the best performance
-eval_type=...   # format of the file: CONLL (for PTB) or CONLLU (for UD). Different scripts are used to evaluate them. The first one excludes the punctuation.
-postag_type=... # type of PoS tags that one wants to use as a self-defined feature: UPoS: Universal part-of-speech tag or XPOS: Language-specific part-of-speach tag
+where
+```bash
+input=...    # file to encode (CoNNL-X format)
+output=...   # output file with encoded dependency trees as labels (SL format)
+encoding=... # encoding type= ["rel-pos", "1-planar-brackets", "2-planar-brackets-greedy","2-planar-brackets-propagation","arc-standard", "arc-eager","arc-hybrid", "covington","zero"]
+mtl=...      # optionally, nb of multi-tasks= ["1-task","2-task","2-task-combined","3-task"]. By default, type that gives the best results is chosen
 ```
 
-* ```--decode-config``` an example of a [config file for decoding](https://github.com/mstrise/seq2label/blob/master/config/decode.config), where
-
-```Python
-### Decode ###
-test_gold=... # gold file for testing
-input=... # file in the CoNLL-U format with either gold or predicted segmentation and PoS tags
-raw_dir=... # file to which the system will write the encoded dependency tree with its labels for testing
-output_nn=... # output from NCRF++ in the form of: TOKEN---POS FEATS---TOP 3 MOST PROBABLE LABELS FOR A GIVEN TOKEN
-parsedTree=...  # final parsed file
-dset_dir=... # directory for .dset file (should be the same as model_dir defined in train.config)
-load_model_dir=... # directory for .model file (should be the same as model_dir defind in train.config)
+To decode a SL file to a CoNNL-X file:
+```bash
+python decode_labels2dep.py --input [--conllu_f] --output --encoding
 ```
+where
+```bash
+input=...    # file to decode (SL format) 
+conllu_f=... # optionally, the corresponding CoNNL-X file (in case of special indexing i.e. 1.1 or 1-2)
+output=...   # output file with decoded dependency trees (CoNNL-X format)
+encoding=... # encoding type= ["rel-pos", "1-planar-brackets", "2-planar-brackets-greedy","2-planar-brackets-propagation","arc-standard", "arc-eager","arc-hybrid", "covington"]
+```
+## Training a model
 
-
-
-
-In this work, the same [pretrained word embeddings](https://github.com/clab/lstm-parser/) for English and
-Chinese were used as in the paper:
-[Transition-Based Dependency Parsing with Stack Long Short-Term Memory](https://arxiv.org/abs/1505.08075). For other
-languages we used [pretrained word embeddings](https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-1989)
- from CoNLL 2017 Shared Task.
-
- The training config file above contains the hyperparameters for the
- ![](https://latex.codecogs.com/gif.latex?$P^{\mathrm{C}}_{\mathrm{2,800}}$) model presented in the paper. The best
- model will be saved as "XXX_best.model" based on the highest UAS score on the development set.
-
-#### Parse with a pre-trained model
+Modify [config file](https://github.com/mstrise/dep2label/tree/master/dep2label/config/train.config) and run the following script:
 
 ```bash
-python main.py  --decode-config $PATH_TO_CONFIG_FILE_FOR_DECODING
+python main.py --config 
 ```
-* ```--decode-config``` an example of a [config file for decoding of the best model](https://github.com/mstrise/seq2label/blob/master/config/decode_best_model.config)
+where
+```bash
+config=...   # path to the config file 
+```
 
+## Parsing with a trained model
 
-#### Script for tree encoding
-
-You can easily encode your trees into labels using the following script:
+run the following script:
 
 ```bash
-python encode_trees2labels.py --fileToEncode $PATH_TO_THE_CONLLU_FILE --output $PATH_TO_THE_OUTPUT_FILE --encoding
-$TYPE_OF_ENCODING:1,2,3,4 --pos $UPOS/XPOS
+python decode.py --test --gold [--predicted] --model --gpu --output --encoding --ncrfpp
+```
+
+where
+```bash
+test=...     # test file with encoded dependency trees (SL format)
+gold=...     # gold test (CoNNL-X format)
+predicted=...# optionally, CONNL-X file with with the predicted segmentation/tokenization/PoS in case the SL test file is also predicted
+model=...    # path to the model (/mod)
+gpu=...      # [True,False]
+output=...   # output file with decoded trees (CoNNL-X format)
+encoding=... # encoding type= ["rel-pos", "1-planar-brackets", "2-planar-brackets--greedy","2-planar-brackets-propagation","arc-standard", "arc-eager","arc-hybrid", "covington"]
+ncrf=...     # path to NCRF
 ```
 
 ## Acknowledgements
@@ -156,36 +109,7 @@ This work has received funding from the European Research Council (ERC), under t
 ## Reference
 
 If you wish to use our work for research purposes, please cite us!
-```
-@inproceedings{strzyz-etal-2019-viable,
-    title = "Viable Dependency Parsing as Sequence Labeling",
-    author = "Strzyz, Michalina  and
-      Vilares, David  and
-      G{\'o}mez-Rodr{\'\i}guez, Carlos",
-    booktitle = "Proceedings of the 2019 Conference of the North {A}merican Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers)",
-    month = jun,
-    year = "2019",
-    address = "Minneapolis, Minnesota",
-    publisher = "Association for Computational Linguistics",
-    url = "https://www.aclweb.org/anthology/N19-1077",
-    doi = "10.18653/v1/N19-1077",
-    pages = "717--723",
-    abstract = "We recast dependency parsing as a sequence labeling problem, exploring several encodings of dependency trees as labels. While dependency parsing by means of sequence labeling had been attempted in existing work, results suggested that the technique was impractical. We show instead that with a conventional BILSTM-based model it is possible to obtain fast and accurate parsers. These parsers are conceptually simple, not needing traditional parsing algorithms or auxiliary structures. However, experiments on the PTB and a sample of UD treebanks show that they provide a good speed-accuracy tradeoff, with results competitive with more complex approaches.",
-}
-```
 
-Original paper for [NCRF++](https://github.com/jiesutd/NCRFpp)
+* Strzyz, Michalina and Vilares, David and Gómez-Rodríguez, Carlos. "Bracketing Encodings for 2-Planar Dependency Parsing". To appear in COLING220.
 
-```
-@inproceedings{yang2018ncrf,
- title={NCRF++: An Open-source Neural Sequence Labeling Toolkit},
- author={Yang, Jie and Zhang, Yue},
- booktitle={Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics},
- Url = {http://aclweb.org/anthology/P18-4013},
- year={2018}
-}
-```
-
-## Contact
-
-Any questions? Bugs? Comments? Contact me using michalina.strzyz[at]udc.es
+* Gómez-Rodríguez, Carlos and Strzyz, Michalina and Vilares, David. "A Unifying Theory of Transition-based and Sequence Labeling Parsing". To appear in COLING2020.
