@@ -201,8 +201,6 @@ class Bracketing1pEncoding():
 
         for word_index in range(1, len(sentence), 1):
             processed_word = sentence[word_index]
-            # add which word owns the label based on the index of the word f.ex. "<_2
-            # first search for entire labels like "<L" and "R>"
             if processed_word[3] == "root":
                 word = {1: word_index, 2: processed_word[0],
                                 3: processed_word[1],
@@ -213,8 +211,6 @@ class Bracketing1pEncoding():
                 if unassigned_words.__contains__(word_index):
                     unassigned_words.pop(word_index)
 
-            # every time when you append an item check from the beginning of the list if something matches
-            # the pattern <\ or /> and remove it from the stack
             char = list(processed_word[2])
             for x in char:
                 if x == "<":
@@ -237,7 +233,6 @@ class Bracketing1pEncoding():
                             decoded_words.update({dependent_index: word})
                             if unassigned_words.__contains__(dependent_index):
                                 unassigned_words.pop(dependent_index)
-                            # remove the w and w+1
                             stack1 = stack1[:-1]
                 elif x ==">":
                     if not len(stack2) == 0:
@@ -251,7 +246,6 @@ class Bracketing1pEncoding():
                         decoded_words.update({word_index: word})
                         if unassigned_words.__contains__(word_index):
                             unassigned_words.pop(word_index)
-                        # remove the w and w+1
                         stack2 = stack2[:-1]
         return decoded_words, unassigned_words
 
