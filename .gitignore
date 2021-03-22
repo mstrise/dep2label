@@ -1,7 +1,6 @@
 *.py[cod]
 __pycache__
 .idea/
-*.txt
 *.log
 *.dset
 *.model
@@ -127,7 +126,7 @@ dmypy.json
 __pycache__
 *.dset
 *.model
-*.txt
+
 demo.clf.*
 sent.*
 *.out
