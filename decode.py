@@ -51,6 +51,7 @@ if __name__ == '__main__':
     decode_fid = str(uuid.uuid4())
     decode_conf_file = codecs.open("/tmp/" + decode_fid, "w")
     decode_conf_file.write(conf_str)
+    decode_conf_file.close()
 
     os.system("python " + args.ncrfpp + "/main.py --config " + decode_conf_file.name + " > " + path_tagger_log)
     log_lines = codecs.open(path_tagger_log).readlines()
